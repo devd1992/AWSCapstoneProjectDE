@@ -1,0 +1,121 @@
+Task 1  
+a.	Identify mongo DB data model from csv file in terms of database, collections, documents.  
+
+Create database DBbank;
+use myDatabase
+
+db.createCollection("Customers")
+
+db.createCollection("Account")
+
+db.createCollection("CreditHistory")
+
+db.createCollection("TermDeposit")
+
+db.createCollection("Campaigns")
+
+
+b. Populate the above data to mongo DB datastore 
+
+We have to use a Python script utilizing the pymongo package and the csv module:
+
+1. Firstly, we need to install pymongo by using pip install pymongo
+2. Use the following code to import data from csv file to Mongo DB.
+
+import csv
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://localhost:8080/")
+db = client["DBBank"]
+
+
+with open('MarketingDataset.csv', 'r') as csvfile:
+    data_reader = csv.DictReader(csvfile)
+    
+    
+
+c. Create five reports. Example: report about right mode to contact the customers etc
+
+1. Right mode to contact customers: Analyze the success rates of different communication methods in the Campaigns collection.
+
+	db.Campaigns.aggregate([
+    {"$group": {"_id": "$method", "avg_success_rate": {"$avg": "$success_rate"}}},
+    {"$sort": {"avg_success_rate": -1}}
+])
+
+
+2. Top 10 professions with successful term deposits: Identify professions with higher deposit success rates.
+
+   db.Customers.aggregate([
+    {"$lookup": {
+        "from": "TermDeposits",
+        "localField": "customer_id",
+        "foreignField": "customer_id",
+        "as": "term_deposits"
+    }},
+    {"$match": {"term_deposits.status": "yes"}},
+    {"$group": {"_id": "$profession", "successful_deposits": {"$sum": 1}}},
+    {"$sort": {"successful_deposits": -1}},
+    {"$limit": 10}
+])
+
+
+3. Age distribution of successful term deposit customers: Analyze age ranges of customers who placed term deposits.
+
+   db.Customers.aggregate([
+    {"$lookup": {
+        "from": "TermDeposits",
+        "localField": "customer_id",
+        "foreignField": "customer_id",
+        "as": "term_deposits"
+    }},
+    {"$match": {"term_deposits.status": "yes"}},
+    {"$bucket": {
+        "groupBy": "$age",
+        "boundaries": [18, 30, 40, 50, 60, 70, 80, 100],
+        "default": "Other",
+        "output": {"count": {"$sum": 1}}
+    }}
+])
+
+
+4. Success rate by customer income level: Determine success rates across different income levels.
+
+   db.Customers.aggregate([
+    {"$lookup": {
+        "from": "TermDeposits",
+        "localField": "customer_id",
+        "foreignField": "customer_id",
+        "as": "term_deposits"
+    }},
+    {"$bucketAuto": {
+        "groupBy": "$income",
+        "buckets": 5,
+        "output": {
+            "total_customers": {"$sum": 1},
+            "successful_customers": {"$sum": {"$cond": [{"$in": ["yes", "$term_deposits.status"]}, 1, 0]}},
+        }
+    }},
+    {"$addFields": {
+        "success_rate": {"$multiply": [{"$divide": ["$successful_customers", "$total_customers"]}, 100]}
+    }}
+])
+
+
+5. Effect of credit history on term deposit success: Evaluate how credit history affects term deposit placements.
+
+    db.Customers.aggregate([
+    {"$lookup": {
+        "from": "CreditHistory",
+        "localField": "customer_id",
+        "foreignField": "customer_id",
+        "as": "credit_history"
+    }},
+    {"$lookup": {
+        "from": "TermDeposits",
+        "localField": "customer_id",
+        "foreignField": "customer_id",
+        "as": "term_deposits"
+    }},
+    {"$project
+

@@ -1,0 +1,19 @@
+Cloud Data Engineering Tasks :
+
+a.	Upload the dataset to aws s3
+
+1. Install and configure the AWS CLI:
+      pip install awscli
+      aws configure
+
+2. Create a new S3 bucket
+      aws s3api create-bucket --bucket capstoneprojectbuckets --region US East (N. Virginia) us-east-1 --create-bucket-configuration LocationConstraint=US East (N. Virginia) us-east-1
+
+
+b.	Create aws managed mongo db instance and create five reports
+c.	Create aws code commit repos and perform the same steps as mentioned in Data Versioning Task
+
+1. Create a new CodeCommit repository:
+    aws codecommit create-repository --repository-name your-repo-name
+
+d.	Create aws emr instance and perform three data engineering tasks such cleaning etc . Example : Removing column values with Unknown , Imputing the column values
