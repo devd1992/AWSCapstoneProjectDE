@@ -3,7 +3,7 @@ Task 2  Generate the Reports and upload them to github
 a.	Clone the repository that you created in task 1
 
 git clone 
-https://github.com/devd1992/CapstoneProject.git
+https://github.com/devd1992/AWSCapstoneProjectDE.git
 cd CapstoneProject
 
 b.	Create a branch for this activity ,Create a file with all the queries from the above tasks. 
