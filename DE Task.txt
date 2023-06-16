@@ -8,12 +8,73 @@ a.	Upload the dataset to aws s3
 
 2. Create a new S3 bucket
       aws s3api create-bucket --bucket capstoneprojectbuckets --region US East (N. Virginia) us-east-1 --create-bucket-configuration LocationConstraint=US East (N. Virginia) us-east-1
-
+      
+       aws s3 cp your-MarketingDataset.csv s3://capstoneprojectbuckets/datasets/
 
 b.	Create aws managed mongo db instance and create five reports
 c.	Create aws code commit repos and perform the same steps as mentioned in Data Versioning Task
 
 1. Create a new CodeCommit repository:
-    aws codecommit create-repository --repository-name your-repo-name
+    aws codecommit create-repository --Codecommitrepos ccrepos
 
-d.	Create aws emr instance and perform three data engineering tasks such cleaning etc . Example : Removing column values with Unknown , Imputing the column values
+2. Clone the CodeCommit repository locally:
+   git clone https://git-codecommit.your-region.amazonaws.com/v1/repos/ccrepos
+   cd ccrepos
+
+   Create Branch for this activity
+    git checkout -b new-branch
+    touch queries1.txt
+    nano queries1.txt
+
+   Commit the branches now:
+    git add queries1.txt
+    git commit -m 
+
+    git push origin new-branch
+
+
+
+
+d. Create aws emr instance and perform three data engineering tasks such cleaning etc . Example : Removing column values with Unknown , Imputing the column values
+      
+      Develop a PySpark script for the data preprocessing tasks such as cleaning, removing unknown values, and imputing column values:
+       
+     
+       ********de.py********
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+
+spark = SparkSession.builder \
+    .appName("Data Engineering Tasks") \
+    .getOrCreate()
+
+# Read CSV file from s3
+
+input_data = "s3a://capstoneprojectbuckets/datasets/MarketingDataset.csv"
+df = spark.read.csv(input_data, header=True)
+
+# Remove rows with 'Unknown' values
+
+df_cleaned = df.filter(~col('column_name').contains('Unknown'))
+
+# Impute missing values
+
+mean_value = df_cleaned.agg(avg(col('column_name'))).collect()[0][0]
+df_imputed = df_cleaned.na.fill(mean_value, subset=['column_name'])
+
+# Further data engineering tasks...
+
+# Save the processed data to S3
+
+output_data = "s3a://your-bucket-name/datasets/processed/"
+df_imputed.write.csv(output_data, mode="overwrite", header=True)
+
+
+spark.stop()
+
+
+Run the PySpark script on the EMR cluster:
+
+spark-submit --packages org.apache.hadoop:hadoop-aws:3.2.0 de.py
+
