@@ -45,36 +45,26 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 
 
-spark = SparkSession.builder \
-    .appName("Data Engineering Tasks") \
+spark = SparkSession.builder
+    .appName("Data Engineering Tasks")
     .getOrCreate()
 
-# Read CSV file from s3
+
 
 input_data = "s3a://capstoneprojectbuckets/datasets/MarketingDataset.csv"
 df = spark.read.csv(input_data, header=True)
 
-# Remove rows with 'Unknown' values
-
 df_cleaned = df.filter(~col('column_name').contains('Unknown'))
-
-# Impute missing values
 
 mean_value = df_cleaned.agg(avg(col('column_name'))).collect()[0][0]
 df_imputed = df_cleaned.na.fill(mean_value, subset=['column_name'])
 
-# Further data engineering tasks...
 
-# Save the processed data to S3
-
-output_data = "s3a://your-bucket-name/datasets/processed/"
+output_data = "s3a://capstoneprojectbuckets/datasets/processed/"
 df_imputed.write.csv(output_data, mode="overwrite", header=True)
 
 
 spark.stop()
-
-
-Run the PySpark script on the EMR cluster:
 
 spark-submit --packages org.apache.hadoop:hadoop-aws:3.2.0 de.py
 
